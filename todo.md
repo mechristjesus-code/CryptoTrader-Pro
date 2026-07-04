@@ -262,6 +262,105 @@ Features: Historical/future data analysis, AI-powered insights, cloud storage, b
 - [ ] Create API integration guides
 - [ ] Build troubleshooting for each platform
 
+## Phase 21: Pine Script Integration (Full)
+- [ ] Add PineScriptStrategies table to schema
+- [ ] Add PineScriptSignals table to schema
+- [ ] Create database migrations for Pine Script tables
+- [ ] Implement pine.ts router with save strategy procedure
+- [ ] Implement list strategies procedure
+- [ ] Implement backtest procedure with performance metrics
+- [ ] Create public webhook endpoint for TradingView alerts
+- [ ] Implement signal storage and validation
+- [ ] Add bot execution trigger on signal
+- [ ] Implement signal history tracking
+- [ ] Add rate limiting to webhook endpoint
+- [ ] Create strategy versioning system
+- [ ] Implement strategy template library
+- [ ] Add security sandbox for code validation
+- [ ] Write vitest tests for Pine Script router
+
+## Phase 22: Pine Script Frontend Editor
+- [x] Install Monaco Editor (`pnpm add @monaco-editor/react`)
+- [x] Create PineScriptStrategies.tsx page
+- [x] Implement Monaco editor with Pine Script syntax highlighting
+- [x] Build strategy editor UI with code validation
+- [x] Implement backtest runner with results display
+- [x] Create signal history display
+- [x] Build strategy list and management
+- [x] Implement strategy template selector
+- [x] Add strategy versioning UI
+- [x] Create strategy comparison view
+- [x] Implement export/import functionality
+- [x] Add code formatting and linting
+- [x] Write component tests for editor
+
+## Phase 23: Bot Management Page (Full)
+- [x] Create BotManagement.tsx page with DashboardLayout
+- [x] Implement native bots tab
+- [x] Implement 3Commas integration tab
+- [x] Implement Cryptohopper integration tab
+- [x] Build bot card component with status display
+- [x] Implement bot start/pause/delete functionality
+- [x] Create bot creation wizard (BotCreationWizard.tsx)
+- [x] Build bot detail modal/drawer
+- [x] Implement bot settings editor
+- [x] Add bot performance metrics display
+- [x] Create bot comparison feature
+- [x] Implement bulk operations (enable/disable multiple)
+- [x] Add search and filtering
+- [x] Build bot status indicators
+- [x] Implement real-time status updates
+- [x] Add toast notifications for actions
+- [x] Write component tests for bot management
+
+## Phase 24: Docker Production Setup
+- [x] Create Dockerfile with Node.js 20 Alpine
+- [x] Create docker-compose.yml with app, MySQL, Redis services
+- [x] Configure environment variables for Docker
+- [x] Set up MySQL database initialization
+- [x] Configure Redis for caching/sessions
+- [x] Add volume management for data persistence
+- [x] Implement health checks for services
+- [x] Add logging configuration
+- [x] Create .dockerignore file
+- [x] Test Docker build and run locally
+- [x] Document Docker deployment process
+- [x] Create production environment configuration
+- [x] Add database migration on startup
+- [x] Implement graceful shutdown handling
+- [x] Add monitoring and logging setup
+
+## Phase 25: Advanced Features
+- [x] Implement AI bot router (ai-bot.ts)
+- [x] Create AI opportunity analyzer
+- [x] Build AI strategy enhancement
+- [x] Implement market analysis with AI
+- [x] Create Portfolio.tsx analytics page
+- [x] Implement portfolio value chart
+- [x] Build bot performance summary
+- [x] Add key metrics cards (Total Value, Active Bots, Trades, Win Rate)
+- [ ] Implement real-time WebSocket for bot updates
+- [ ] Create advanced charting with technical indicators
+- [ ] Build portfolio rebalancing tools
+- [ ] Implement multi-asset correlation analysis
+- [ ] Create risk management dashboard
+- [ ] Build performance attribution analysis
+- [ ] Implement strategy backtesting framework
+- [ ] Create market microstructure analysis
+- [ ] Build sentiment analysis integration
+- [ ] Implement machine learning for strategy optimization
+
+## Phase 26: Mobile & Responsive
+- [ ] Test and optimize for mobile devices
+- [ ] Create mobile-specific navigation
+- [ ] Build responsive charts for mobile
+- [ ] Implement touch gestures for interactions
+- [ ] Create mobile-optimized forms
+- [ ] Add PWA support for offline access
+- [ ] Implement mobile notifications
+- [ ] Build mobile-specific performance optimizations
+
+
 ## Notes
 - All bot metrics must be sourced from live 3Commas and Cryptohopper APIs
 - All market data must be sourced from live Kraken API
@@ -275,3 +374,19 @@ Features: Historical/future data analysis, AI-powered insights, cloud storage, b
 - Historical data stored for trend analysis and backtesting
 - Real-time market data streamed via WebSocket
 - AI-powered predictive analytics on historical data
+- Pine Script strategies validated and sandboxed
+- TradingView webhook integration for signal generation
+- Docker production setup for scalable deployment
+- Multi-platform bot management with unified interface
+- AI-powered bot decision making and optimization
+- Bot creation wizard with multi-step configuration
+- Portfolio analytics and performance tracking
+- Deployment script for production rollout
+
+## Recently Added (Phase 22-26)
+- [x] BotCreationWizard.tsx - Multi-step bot creation with risk settings
+- [x] AI Bot Router (ai-bot.ts) - LLM-powered trading recommendations
+- [x] Portfolio.tsx - Comprehensive portfolio analytics page
+- [x] deploy.sh - Production deployment script (executable)
+- [x] Enhanced Docker setup with health checks and logging
+- [x] Updated main routers.ts with all new routers integrated

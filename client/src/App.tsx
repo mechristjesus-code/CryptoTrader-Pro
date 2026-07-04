@@ -5,12 +5,24 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import BotManagement from "./pages/BotManagement";
+import PineScriptEditor from "./pages/PineScriptEditor";
+import Portfolio from "./pages/Portfolio";
+import Notifications from "./pages/Notifications";
+import Chat from "./pages/Chat";
+import Settings from "./pages/Settings";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/bots"} component={BotManagement} />
+      <Route path={"/pine"} component={PineScriptEditor} />
+      <Route path={"/portfolio"} component={Portfolio} />
+      <Route path={"/notifications"} component={Notifications} />
+      <Route path={"/chat"} component={Chat} />
+      <Route path={"/settings"} component={Settings} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
