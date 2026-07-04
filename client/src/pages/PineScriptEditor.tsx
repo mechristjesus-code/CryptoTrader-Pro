@@ -12,7 +12,7 @@ import Editor from '@monaco-editor/react';
 import { trpc } from '@/lib/trpc';
 import { Play, Save, Trash2, Plus, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import BacktestExportButtons from '@/components/BacktestExportButtons';
+import BacktestExportButtonsWithDateRange from '@/components/BacktestExportButtonsWithDateRange';
 
 const STRATEGY_TEMPLATES = {
   dca: `strategy("DCA Strategy", overlay=true)
@@ -270,7 +270,7 @@ export default function PineScriptEditor() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {/* Export Buttons */}
                     <div className="col-span-full mb-4">
-                      <BacktestExportButtons
+                      <BacktestExportButtonsWithDateRange
                         strategyName={strategyName || 'Strategy'}
                         symbol={selectedSymbol}
                         timeframe={selectedTimeframe}

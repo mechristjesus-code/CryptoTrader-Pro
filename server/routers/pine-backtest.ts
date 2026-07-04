@@ -7,6 +7,10 @@ import {
   exportEquityCurveCSV,
   exportCompleteBacktestCSV,
   generateExportFilename,
+  filterTradesByDateRange,
+  filterEquityCurveByDateRange,
+  calculateFilteredMetrics,
+  exportTradesCSVWithDateRange,
 } from "../utils/csv-export";
 
 interface BacktestTrade {
@@ -497,6 +501,151 @@ export const pineBacktestRouter = router({
         };
       } catch (error) {
         console.error("[pineBacktestRouter.exportComplete]", error);
+        return {
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    }),
+  /**
+   * Export trades with date range filter
+   */
+  exportTradesWithDateRange: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        symbol: z.string(),
+        trades: z.array(
+          z.object({
+            id: z.number(),
+            entryTime: z.string(),
+            exitTime: z.string(),
+            side: z.enum(["long", "short"]),
+            entryPrice: z.number(),
+            exitPrice: z.number(),
+            quantity: z.number(),
+            pnl: z.number(),
+            pnlPercent: z.number(),
+            commission: z.number(),
+          })
+        ),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const startDate = input.startDate ? new Date(input.startDate) : undefined;
+        const endDate = input.endDate ? new Date(input.endDate) : undefined;
+
+        const csv = exportTradesCSVWithDateRange(input.trades, startDate, endDate);
+        const filename = generateExportFilename(input.strategyName, input.symbol, "trades");
+
+        return {
+          success: true,
+          data: {
+            csv,
+            filename,
+            mimeType: "text/csv",
+            recordsCount: filterTradesByDateRange(input.trades, startDate, endDate).length,
+          },
+        };
+      } catch (error) {
+        console.error("[pineBacktestRouter.exportTradesWithDateRange]", error);
+        return {
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    }),
+
+  /**
+   * Export equity curve with date range filter
+   */
+  exportEquityCurveWithDateRange: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        symbol: z.string(),
+        curve: z.array(
+          z.object({
+            timestamp: z.number(),
+            equity: z.number(),
+            drawdown: z.number(),
+          })
+        ),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const startDate = input.startDate ? new Date(input.startDate) : undefined;
+        const endDate = input.endDate ? new Date(input.endDate) : undefined;
+
+        const filteredCurve = filterEquityCurveByDateRange(input.curve, startDate, endDate);
+        const csv = exportEquityCurveCSV(filteredCurve);
+        const filename = generateExportFilename(input.strategyName, input.symbol, "equity");
+
+        return {
+          success: true,
+          data: {
+            csv,
+            filename,
+            mimeType: "text/csv",
+            pointsCount: filteredCurve.length,
+          },
+        };
+      } catch (error) {
+        console.error("[pineBacktestRouter.exportEquityCurveWithDateRange]", error);
+        return {
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    }),
+
+  /**
+   * Get filtered metrics for date range
+   */
+  getFilteredMetrics: protectedProcedure
+    .input(
+      z.object({
+        trades: z.array(
+          z.object({
+            id: z.number(),
+            entryTime: z.string(),
+            exitTime: z.string(),
+            side: z.enum(["long", "short"]),
+            entryPrice: z.number(),
+            exitPrice: z.number(),
+            quantity: z.number(),
+            pnl: z.number(),
+            pnlPercent: z.number(),
+            commission: z.number(),
+          })
+        ),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const startDate = input.startDate ? new Date(input.startDate) : undefined;
+        const endDate = input.endDate ? new Date(input.endDate) : undefined;
+
+        const filteredTrades = filterTradesByDateRange(input.trades, startDate, endDate);
+        const metrics = calculateFilteredMetrics(filteredTrades);
+
+        return {
+          success: true,
+          data: {
+            metrics,
+            tradeCount: filteredTrades.length,
+          },
+        };
+      } catch (error) {
+        console.error("[pineBacktestRouter.getFilteredMetrics]", error);
         return {
           success: false,
           error: (error as Error).message,

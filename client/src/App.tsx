@@ -11,6 +11,12 @@ import Portfolio from "./pages/Portfolio";
 import Notifications from "./pages/Notifications";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
+import AdvancedOrders from "./pages/AdvancedOrders";
+import AlertsAutomation from "./pages/AlertsAutomation";
+import SocialTrading from "./pages/SocialTrading";
+import PortfolioAnalytics from "./pages/PortfolioAnalytics";
+import PriceTracking from "./pages/PriceTracking";
+import AIAssistant from "./pages/AIAssistant";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -23,6 +29,12 @@ function Router() {
       <Route path={"/notifications"} component={Notifications} />
       <Route path={"/chat"} component={Chat} />
       <Route path={"/settings"} component={Settings} />
+      <Route path={"/advanced-orders"} component={AdvancedOrders} />
+      <Route path={"/alerts"} component={AlertsAutomation} />
+      <Route path={"/social-trading"} component={SocialTrading} />
+      <Route path={"/portfolio-analytics"} component={PortfolioAnalytics} />
+      <Route path={"/price-tracking"} component={PriceTracking} />
+      <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

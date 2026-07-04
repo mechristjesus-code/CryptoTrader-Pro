@@ -33,10 +33,145 @@ export interface BacktestTrade {
   commission: number;
 }
 
+export interface DateRangeFilter {
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export interface EquityCurvePoint {
   timestamp: number;
   equity: number;
   drawdown: number;
+}
+
+/**
+ * Filter trades by date range
+ */
+export function filterTradesByDateRange(
+  trades: BacktestTrade[],
+  startDate?: Date,
+  endDate?: Date
+): BacktestTrade[] {
+  if (!startDate && !endDate) {
+    return trades;
+  }
+
+  return trades.filter((trade) => {
+    const exitTime = new Date(trade.exitTime);
+
+    if (startDate && exitTime < startDate) {
+      return false;
+    }
+
+    if (endDate && exitTime > endDate) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Filter equity curve by date range
+ */
+export function filterEquityCurveByDateRange(
+  curve: EquityCurvePoint[],
+  startDate?: Date,
+  endDate?: Date
+): EquityCurvePoint[] {
+  if (!startDate && !endDate) {
+    return curve;
+  }
+
+  const startTime = startDate?.getTime();
+  const endTime = endDate?.getTime();
+
+  return curve.filter((point) => {
+    if (startTime && point.timestamp < startTime) {
+      return false;
+    }
+
+    if (endTime && point.timestamp > endTime) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Calculate filtered metrics
+ */
+export function calculateFilteredMetrics(
+  trades: BacktestTrade[]
+): Omit<BacktestMetrics, "totalTrades" | "winningTrades" | "losingTrades"> & {
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+} {
+  const totalTrades = trades.length;
+  const winningTrades = trades.filter((t) => t.pnl > 0).length;
+  const losingTrades = trades.filter((t) => t.pnl < 0).length;
+  const winRate = totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : "0.00";
+
+  const netProfit = trades.reduce((sum, t) => sum + t.pnl, 0);
+  const grossProfit = trades.filter((t) => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
+  const grossLoss = Math.abs(trades.filter((t) => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0));
+  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
+
+  const avgWinTrade = winningTrades > 0 ? grossProfit / winningTrades : 0;
+  const avgLossTrade = losingTrades > 0 ? grossLoss / losingTrades : 0;
+
+  const largestWin = trades.length > 0 ? Math.max(...trades.map((t) => t.pnl)) : 0;
+  const largestLoss = trades.length > 0 ? Math.min(...trades.map((t) => t.pnl)) : 0;
+
+  // Simplified Sharpe ratio calculation
+  const returns = trades.map((t) => t.pnlPercent);
+  const avgReturn = returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0;
+  const variance =
+    returns.length > 0
+      ? returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
+      : 0;
+  const stdDev = Math.sqrt(variance);
+  const sharpeRatio = stdDev > 0 ? avgReturn / stdDev : 0;
+
+  // Expectancy = (Win% * Avg Win) - (Loss% * Avg Loss)
+  const expectancy =
+    (winRate ? parseFloat(winRate) / 100 : 0) * avgWinTrade -
+    (100 - (winRate ? parseFloat(winRate) : 0)) / 100 * avgLossTrade;
+
+  // Max drawdown (simplified)
+  let maxDrawdown = 0;
+  let peak = 0;
+  let equity = 0;
+  for (const trade of trades) {
+    equity += trade.pnl;
+    if (equity > peak) {
+      peak = equity;
+    }
+    const drawdown = peak > 0 ? ((peak - equity) / peak) * 100 : 0;
+    if (drawdown > maxDrawdown) {
+      maxDrawdown = drawdown;
+    }
+  }
+
+  return {
+    totalTrades,
+    winningTrades,
+    losingTrades,
+    winRate,
+    netProfit,
+    grossProfit,
+    grossLoss,
+    profitFactor,
+    maxDrawdown: maxDrawdown.toFixed(2) + "%",
+    sharpeRatio: parseFloat(sharpeRatio.toFixed(2)),
+    expectancy: parseFloat(expectancy.toFixed(2)),
+    avgWinTrade: parseFloat(avgWinTrade.toFixed(2)),
+    avgLossTrade: parseFloat(avgLossTrade.toFixed(2)),
+    largestWin,
+    largestLoss,
+  };
 }
 
 /**
@@ -137,6 +272,18 @@ export function exportTradesCSV(trades: BacktestTrade[]): string {
 
   const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
   return csvContent;
+}
+
+/**
+ * Export trades with date range filter
+ */
+export function exportTradesCSVWithDateRange(
+  trades: BacktestTrade[],
+  startDate?: Date,
+  endDate?: Date
+): string {
+  const filteredTrades = filterTradesByDateRange(trades, startDate, endDate);
+  return exportTradesCSV(filteredTrades);
 }
 
 /**
