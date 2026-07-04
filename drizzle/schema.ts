@@ -234,3 +234,42 @@ export const userSettings = mysqlTable("user_settings", {
 
 export type UserSettings = typeof userSettings.$inferSelect;
 export type InsertUserSettings = typeof userSettings.$inferInsert;
+
+// Advanced Orders Tables
+
+export const advancedOrders = mysqlTable("advanced_orders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  orderType: mysqlEnum("orderType", ["limit", "stop_loss", "take_profit", "trailing_stop", "oco"]).notNull(),
+  side: mysqlEnum("side", ["buy", "sell"]).notNull(),
+  quantity: decimal("quantity", { precision: 18, scale: 8 }).notNull(),
+  entryPrice: decimal("entryPrice", { precision: 18, scale: 8 }).notNull(),
+  limitPrice: decimal("limitPrice", { precision: 18, scale: 8 }),
+  stopPrice: decimal("stopPrice", { precision: 18, scale: 8 }),
+  trailingPercent: decimal("trailingPercent", { precision: 5, scale: 2 }),
+  status: mysqlEnum("status", ["pending", "active", "filled", "cancelled", "expired"]).default("pending").notNull(),
+  exchange: varchar("exchange", { length: 50 }).notNull(),
+  executedPrice: decimal("executedPrice", { precision: 18, scale: 8 }),
+  executedQuantity: decimal("executedQuantity", { precision: 18, scale: 8 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  expiresAt: timestamp("expiresAt"),
+});
+
+export type AdvancedOrder = typeof advancedOrders.$inferSelect;
+export type InsertAdvancedOrder = typeof advancedOrders.$inferInsert;
+
+export const orderHistory = mysqlTable("order_history", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  status: mysqlEnum("status", ["pending", "active", "filled", "cancelled", "expired"]).notNull(),
+  price: decimal("price", { precision: 18, scale: 8 }),
+  quantity: decimal("quantity", { precision: 18, scale: 8 }),
+  fee: decimal("fee", { precision: 18, scale: 8 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OrderHistory = typeof orderHistory.$inferSelect;
+export type InsertOrderHistory = typeof orderHistory.$inferInsert;

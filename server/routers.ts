@@ -11,6 +11,8 @@ import notificationsRouter from "./routers/notifications";
 import chatRouter from "./routers/chat";
 import pineBacktestRouter from "./routers/pine-backtest";
 
+import { ordersRouter } from "./routers/orders";
+
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -22,6 +24,7 @@ export const appRouter = router({
   notifications: notificationsRouter,
   chat: chatRouter,
   pineBacktest: pineBacktestRouter,
+  orders: ordersRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
