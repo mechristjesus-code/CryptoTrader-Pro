@@ -15,6 +15,8 @@ import { ordersRouter } from "./routers/orders";
 
 import { coinbaseRouter } from "./routers/coinbase";
 
+import { indicatorsRouter } from "./routers/indicators";
+
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -28,6 +30,7 @@ export const appRouter = router({
   pineBacktest: pineBacktestRouter,
   orders: ordersRouter,
   coinbase: coinbaseRouter,
+  indicators: indicatorsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
