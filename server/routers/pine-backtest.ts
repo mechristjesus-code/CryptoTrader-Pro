@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
+import {
+  exportMetricsCSV,
+  exportTradesCSV,
+  exportEquityCurveCSV,
+  exportCompleteBacktestCSV,
+  generateExportFilename,
+} from "../utils/csv-export";
 
 interface BacktestTrade {
   id: number;
@@ -255,28 +262,241 @@ export const pineBacktestRouter = router({
   /**
    * Compare two backtests
    */
-  compare: protectedProcedure
+    compare: protectedProcedure
+      .input(
+        z.object({
+          backtestId1: z.string(),
+          backtestId2: z.string(),
+        })
+      )
+      .query(async ({ input }) => {
+        try {
+          return {
+            success: true,
+            data: {
+              comparison: {
+                winRate: { backtest1: "62.5%", backtest2: "58.3%", winner: "backtest1" },
+                profitFactor: { backtest1: 1.85, backtest2: 1.62, winner: "backtest1" },
+                maxDrawdown: { backtest1: "-12.5%", backtest2: "-15.3%", winner: "backtest1" },
+                sharpeRatio: { backtest1: 1.45, backtest2: 1.28, winner: "backtest1" },
+              },
+            },
+          };
+        } catch (error) {
+          console.error("[pineBacktestRouter.compare]", error);
+          return {
+            success: false,
+            error: (error as Error).message,
+          };
+        }
+      }),
+
+  /**
+   * Export backtest metrics as CSV
+   */
+  exportMetrics: protectedProcedure
     .input(
       z.object({
-        backtestId1: z.string(),
-        backtestId2: z.string(),
+        strategyName: z.string(),
+        symbol: z.string(),
+        timeframe: z.string(),
+        metrics: z.object({
+          totalTrades: z.number(),
+          winningTrades: z.number(),
+          losingTrades: z.number(),
+          winRate: z.string(),
+          netProfit: z.number(),
+          grossProfit: z.number(),
+          grossLoss: z.number(),
+          profitFactor: z.number(),
+          maxDrawdown: z.string(),
+          sharpeRatio: z.number(),
+          expectancy: z.number(),
+          avgWinTrade: z.number(),
+          avgLossTrade: z.number(),
+          largestWin: z.number(),
+          largestLoss: z.number(),
+        }),
       })
     )
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       try {
+        const csv = exportMetricsCSV(input.metrics, input.strategyName, input.symbol, input.timeframe);
+        const filename = generateExportFilename(input.strategyName, input.symbol, "metrics");
+
         return {
           success: true,
           data: {
-            comparison: {
-              winRate: { backtest1: "62.5%", backtest2: "58.3%", winner: "backtest1" },
-              profitFactor: { backtest1: 1.85, backtest2: 1.62, winner: "backtest1" },
-              maxDrawdown: { backtest1: "-12.5%", backtest2: "-15.3%", winner: "backtest1" },
-              sharpeRatio: { backtest1: 1.45, backtest2: 1.28, winner: "backtest1" },
-            },
+            csv,
+            filename,
+            mimeType: "text/csv",
           },
         };
       } catch (error) {
-        console.error("[pineBacktestRouter.compare]", error);
+        console.error("[pineBacktestRouter.exportMetrics]", error);
+        return {
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    }),
+
+  /**
+   * Export trade list as CSV
+   */
+  exportTrades: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        symbol: z.string(),
+        trades: z.array(
+          z.object({
+            id: z.number(),
+            entryTime: z.string(),
+            exitTime: z.string(),
+            side: z.enum(["long", "short"]),
+            entryPrice: z.number(),
+            exitPrice: z.number(),
+            quantity: z.number(),
+            pnl: z.number(),
+            pnlPercent: z.number(),
+            commission: z.number(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const csv = exportTradesCSV(input.trades);
+        const filename = generateExportFilename(input.strategyName, input.symbol, "trades");
+
+        return {
+          success: true,
+          data: {
+            csv,
+            filename,
+            mimeType: "text/csv",
+          },
+        };
+      } catch (error) {
+        console.error("[pineBacktestRouter.exportTrades]", error);
+        return {
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    }),
+
+  /**
+   * Export equity curve as CSV
+   */
+  exportEquityCurve: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        symbol: z.string(),
+        curve: z.array(
+          z.object({
+            timestamp: z.number(),
+            equity: z.number(),
+            drawdown: z.number(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const csv = exportEquityCurveCSV(input.curve);
+        const filename = generateExportFilename(input.strategyName, input.symbol, "equity");
+
+        return {
+          success: true,
+          data: {
+            csv,
+            filename,
+            mimeType: "text/csv",
+          },
+        };
+      } catch (error) {
+        console.error("[pineBacktestRouter.exportEquityCurve]", error);
+        return {
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    }),
+
+  /**
+   * Export complete backtest report as CSV
+   */
+  exportComplete: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        symbol: z.string(),
+        timeframe: z.string(),
+        metrics: z.object({
+          totalTrades: z.number(),
+          winningTrades: z.number(),
+          losingTrades: z.number(),
+          winRate: z.string(),
+          netProfit: z.number(),
+          grossProfit: z.number(),
+          grossLoss: z.number(),
+          profitFactor: z.number(),
+          maxDrawdown: z.string(),
+          sharpeRatio: z.number(),
+          expectancy: z.number(),
+          avgWinTrade: z.number(),
+          avgLossTrade: z.number(),
+          largestWin: z.number(),
+          largestLoss: z.number(),
+        }),
+        trades: z.array(
+          z.object({
+            id: z.number(),
+            entryTime: z.string(),
+            exitTime: z.string(),
+            side: z.enum(["long", "short"]),
+            entryPrice: z.number(),
+            exitPrice: z.number(),
+            quantity: z.number(),
+            pnl: z.number(),
+            pnlPercent: z.number(),
+            commission: z.number(),
+          })
+        ),
+        curve: z.array(
+          z.object({
+            timestamp: z.number(),
+            equity: z.number(),
+            drawdown: z.number(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const csv = exportCompleteBacktestCSV(
+          input.metrics,
+          input.trades,
+          input.curve,
+          input.strategyName,
+          input.symbol,
+          input.timeframe
+        );
+        const filename = generateExportFilename(input.strategyName, input.symbol, "complete");
+
+        return {
+          success: true,
+          data: {
+            csv,
+            filename,
+            mimeType: "text/csv",
+          },
+        };
+      } catch (error) {
+        console.error("[pineBacktestRouter.exportComplete]", error);
         return {
           success: false,
           error: (error as Error).message,

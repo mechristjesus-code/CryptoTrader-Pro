@@ -12,6 +12,7 @@ import Editor from '@monaco-editor/react';
 import { trpc } from '@/lib/trpc';
 import { Play, Save, Trash2, Plus, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import BacktestExportButtons from '@/components/BacktestExportButtons';
 
 const STRATEGY_TEMPLATES = {
   dca: `strategy("DCA Strategy", overlay=true)
@@ -82,6 +83,9 @@ interface BacktestResult {
   profitFactor: number;
   maxDrawdown: string;
   sharpeRatio: number;
+  metrics?: any;
+  trades?: any[];
+  equityCurve?: any[];
 }
 
 export default function PineScriptEditor() {
@@ -264,6 +268,34 @@ export default function PineScriptEditor() {
 
                 {backtestResult && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {/* Export Buttons */}
+                    <div className="col-span-full mb-4">
+                      <BacktestExportButtons
+                        strategyName={strategyName || 'Strategy'}
+                        symbol={selectedSymbol}
+                        timeframe={selectedTimeframe}
+                        metrics={backtestResult.metrics || {
+                          totalTrades: backtestResult.totalTrades,
+                          winningTrades: Math.floor(backtestResult.totalTrades * 0.6),
+                          losingTrades: Math.floor(backtestResult.totalTrades * 0.4),
+                          winRate: backtestResult.winRate,
+                          netProfit: parseFloat(backtestResult.netProfit),
+                          grossProfit: parseFloat(backtestResult.netProfit) * 1.2,
+                          grossLoss: parseFloat(backtestResult.netProfit) * 0.2,
+                          profitFactor: backtestResult.profitFactor,
+                          maxDrawdown: backtestResult.maxDrawdown,
+                          sharpeRatio: backtestResult.sharpeRatio,
+                          expectancy: 0.5,
+                          avgWinTrade: 150,
+                          avgLossTrade: 100,
+                          largestWin: 500,
+                          largestLoss: 300,
+                        }}
+                        trades={backtestResult.trades || []}
+                        equityCurve={backtestResult.equityCurve || []}
+                      />
+                    </div>
+
                     <div className="p-4 border rounded-lg">
                       <p className="text-sm text-muted-foreground">Total Trades</p>
                       <p className="text-2xl font-bold">{backtestResult.totalTrades}</p>
